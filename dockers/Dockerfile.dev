@@ -1,0 +1,15 @@
+FROM golang:1.22.6
+
+RUN curl -sSfL https://raw.githubusercontent.com/cosmtrek/air/master/install.sh | sh -s -- -b $(go env GOPATH)/bin
+RUN curl -sSL https://release.ariga.io/atlas/atlas-linux-amd64-latest -o /usr/local/bin/atlas && chmod +x /usr/local/bin/atlas
+RUN apt-get update && apt-get install -y postgresql-client
+
+WORKDIR /usr/src/web_debtor
+
+COPY ./scripts/wait-for-postgres.sh /usr/local/bin/wait-for-postgres.sh
+COPY ./go.mod .
+COPY ./go.sum .
+
+RUN go mod download && go mod verify
+
+COPY ./ .

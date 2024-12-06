@@ -1,0 +1,31 @@
+services:
+  web_debtor:
+    build:
+      context: ./
+      dockerfile: ./dockers/Dockerfile.dev
+    command: sh scripts/entrypoint.sh
+    volumes:
+      - ./:/usr/src/web_debtor
+    ports:
+      - 8080:8080
+    restart:
+      always
+    depends_on:
+      - db
+    environment:
+      - POSTGRES_USER=project
+      - POSTGRES_PASSWORD=project123
+      - POSTGRES_DB=project_db
+  db:
+    image: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_USER=project
+      - POSTGRES_PASSWORD=project123
+      - POSTGRES_DB=project_db
+    ports:
+      - 5432:5432
+
+volumes:
+  postgres_data:

@@ -1,0 +1,5 @@
+./atlas migrate diff --env gorm
+./atlas migrate apply --url "postgresql://project:project123@localhost:5432/project_db?sslmode=disable"
+./atlas migrate down --url "postgresql://project:project123@localhost:5432/project_db?sslmode=disable" --dir "file://migrations" --dev-url "docker://postgres/15"
+
+go run ./seeds
