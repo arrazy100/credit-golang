@@ -1,0 +1,341 @@
+basePath: /api/v1
+definitions:
+  custom_errors.ErrorField:
+    properties:
+      field:
+        type: string
+      tag:
+        type: string
+      value:
+        type: string
+    type: object
+  custom_errors.ErrorValidation:
+    properties:
+      fields:
+        items:
+          $ref: '#/definitions/custom_errors.ErrorField'
+        type: array
+      message:
+        type: string
+    type: object
+  enums.TenorLimitType:
+    enum:
+    - 1
+    - 2
+    type: integer
+    x-enum-varnames:
+    - Monthly
+    - Yearly
+  enums.UserRole:
+    enum:
+    - 1
+    - 2
+    type: integer
+    x-enum-varnames:
+    - Admin
+    - Debtor
+  request.LoginPayload:
+    properties:
+      email:
+        type: string
+      password:
+        maxLength: 25
+        minLength: 5
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  request.RegisterDebtorPayload:
+    properties:
+      date_of_birth:
+        minLength: 1
+        type: string
+      full_name:
+        maxLength: 255
+        minLength: 1
+        type: string
+      identity_picture_url:
+        maxLength: 2048
+        minLength: 1
+        type: string
+      legal_name:
+        maxLength: 255
+        minLength: 1
+        type: string
+      nik:
+        maxLength: 25
+        minLength: 16
+        type: string
+      place_of_birth:
+        maxLength: 255
+        minLength: 1
+        type: string
+      salary:
+        type: string
+      selfie_picture_url:
+        maxLength: 2048
+        minLength: 1
+        type: string
+    required:
+    - date_of_birth
+    - full_name
+    - identity_picture_url
+    - legal_name
+    - nik
+    - place_of_birth
+    - salary
+    - selfie_picture_url
+    type: object
+  request.RegisterPayload:
+    properties:
+      email:
+        type: string
+      password:
+        maxLength: 25
+        minLength: 5
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  response.DebtorResponse:
+    properties:
+      date_of_birth:
+        type: string
+      full_name:
+        type: string
+      id:
+        type: string
+      identity_picture_url:
+        type: string
+      legal_name:
+        type: string
+      nik:
+        type: string
+      place_of_birth:
+        type: string
+      salary:
+        type: string
+      selfie_picture_url:
+        type: string
+      user_id:
+        type: string
+    type: object
+  response.DebtorTenorLimitResponse:
+    properties:
+      limit_amount:
+        type: string
+      tenor_duration:
+        type: integer
+      tenor_limit_type:
+        $ref: '#/definitions/enums.TenorLimitType'
+    type: object
+  response.ListDebtorResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/response.DebtorResponse'
+        type: array
+      total:
+        type: integer
+    type: object
+  response.LoginResponse:
+    properties:
+      token:
+        type: string
+      user:
+        $ref: '#/definitions/utils.SimpleAuth'
+    type: object
+  response.RegisterDebtorResponse:
+    properties:
+      date_of_birth:
+        type: string
+      debtor_tenor_limits:
+        items:
+          $ref: '#/definitions/response.DebtorTenorLimitResponse'
+        type: array
+      full_name:
+        type: string
+      identity_picture_url:
+        type: string
+      legal_name:
+        type: string
+      nik:
+        type: string
+      place_of_birth:
+        type: string
+      salary:
+        type: string
+      selfie_picture_url:
+        type: string
+    type: object
+  response.RegisterResponse:
+    properties:
+      email:
+        type: string
+      role:
+        $ref: '#/definitions/enums.UserRole'
+      user_id:
+        type: string
+    type: object
+  utils.SimpleAuth:
+    properties:
+      id:
+        type: string
+      role:
+        $ref: '#/definitions/enums.UserRole'
+    type: object
+externalDocs:
+  description: OpenAPI
+  url: https://swagger.io/resources/open-api/
+host: localhost:8080
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Debtor API
+  version: 1.0.
+paths:
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Login to get token
+      parameters:
+      - description: Body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.LoginPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.LoginResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/custom_errors.ErrorValidation'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/custom_errors.ErrorValidation'
+      summary: Login
+      tags:
+      - auth
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Register Debtor User
+      parameters:
+      - description: Body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.RegisterPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.RegisterResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/custom_errors.ErrorValidation'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/custom_errors.ErrorValidation'
+      summary: Register
+      tags:
+      - auth
+  /debtor/detail:
+    get:
+      consumes:
+      - application/json
+      description: Detail Debtor of logged in User
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.DebtorResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/custom_errors.ErrorValidation'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/custom_errors.ErrorValidation'
+      summary: Detail Debtor
+      tags:
+      - debtor
+  /debtor/register:
+    post:
+      consumes:
+      - application/json
+      description: Register Debtor to get Tenor Limits
+      parameters:
+      - description: Body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.RegisterDebtorPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.RegisterDebtorResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/custom_errors.ErrorValidation'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/custom_errors.ErrorValidation'
+      summary: Register Debtor
+      tags:
+      - debtor
+  /list/debtor:
+    get:
+      consumes:
+      - application/json
+      description: List all registered Debtor
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.ListDebtorResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/custom_errors.ErrorValidation'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/custom_errors.ErrorValidation'
+      summary: List Debtor
+      tags:
+      - admin
+swagger: "2.0"

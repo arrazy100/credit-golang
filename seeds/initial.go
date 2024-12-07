@@ -12,7 +12,7 @@ import (
 )
 
 func SeedInitial(config *config.Config) error {
-	hashed, err := utils.HashPassword("admin")
+	hashed, err := utils.HashPassword("admin123")
 	if err != nil {
 		return err
 	}
@@ -30,7 +30,7 @@ func SeedInitial(config *config.Config) error {
 			return err
 		}
 
-		if seedVersion.Version < 1 {
+		if seedVersion.Version == 0 {
 			if err := tx.Create(&admin).Error; err != nil {
 				return err
 			}

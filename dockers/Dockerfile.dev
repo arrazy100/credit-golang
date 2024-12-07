@@ -6,7 +6,7 @@ RUN apt-get update && apt-get install -y postgresql-client
 
 WORKDIR /usr/src/web_debtor
 
-COPY ./scripts/wait-for-postgres.sh /usr/local/bin/wait-for-postgres.sh
+COPY ./dockers/wait-for-postgres.sh /usr/local/bin/wait-for-postgres.sh
 COPY ./go.mod .
 COPY ./go.sum .
 

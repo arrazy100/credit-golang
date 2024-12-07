@@ -15,7 +15,6 @@ func main() {
 		&base.User{},
 		&models.SeedVersion{},
 		&models.Debtor{},
-		&models.DebtorToUser{},
 		&models.DebtorTenorLimit{},
 		&models.DebtorTransaction{},
 		&models.DebtorInstallment{},

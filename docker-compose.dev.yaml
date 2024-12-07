@@ -3,7 +3,7 @@ services:
     build:
       context: ./
       dockerfile: ./dockers/Dockerfile.dev
-    command: sh scripts/entrypoint.sh
+    command: sh dockers/entrypoint.sh
     volumes:
       - ./:/usr/src/web_debtor
     ports:

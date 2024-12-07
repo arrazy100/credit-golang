@@ -1,6 +1,7 @@
 package services_tests
 
 import (
+	"credit/models"
 	"credit/models/base"
 	"credit/models/enums"
 	"credit/utils"
@@ -14,8 +15,9 @@ import (
 
 type ServiceTestSuite struct {
 	suite.Suite
-	Db    *gorm.DB
-	Admin base.User
+	Db         *gorm.DB
+	Admin      base.User
+	DebtorUser base.User
 }
 
 func (suite *ServiceTestSuite) SetupTest() {
@@ -25,9 +27,9 @@ func (suite *ServiceTestSuite) SetupTest() {
 		panic("failed to connect to database")
 	}
 
-	suite.Db.AutoMigrate(&base.User{})
+	suite.Db.AutoMigrate(&base.User{}, &models.Debtor{}, &models.DebtorTenorLimit{})
 
-	SetupAdminUser(suite, &suite.Suite)
+	SetupUser(suite, &suite.Suite)
 }
 
 func (suite *ServiceTestSuite) TearDownTest() {
@@ -42,7 +44,7 @@ func TestServiceSuite(t *testing.T) {
 	suite.Run(t, new(ServiceTestSuite))
 }
 
-func SetupAdminUser(suiteStruct *ServiceTestSuite, suite *suite.Suite) {
+func SetupUser(suiteStruct *ServiceTestSuite, suite *suite.Suite) {
 	hashed, err := utils.HashPassword("admin")
 	suite.NoError(err)
 
@@ -53,8 +55,18 @@ func SetupAdminUser(suiteStruct *ServiceTestSuite, suite *suite.Suite) {
 		Role:     enums.Admin,
 	}
 
+	suiteStruct.DebtorUser = base.User{
+		ID:       uuid.New(),
+		Email:    "debtor@debtor.com",
+		Password: hashed,
+		Role:     enums.Debtor,
+	}
+
 	err = suiteStruct.Db.Transaction(func(tx *gorm.DB) error {
 		err := tx.Create(&suiteStruct.Admin).Error
+		suite.NoError(err)
+
+		err = tx.Create(&suiteStruct.DebtorUser).Error
 		suite.NoError(err)
 
 		return nil

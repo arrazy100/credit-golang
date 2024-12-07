@@ -22,3 +22,16 @@ func TestSimpleAuth_GenerateAndParseToken(t *testing.T) {
 	assert.Equal(t, decoded.UserID, userID)
 	assert.Equal(t, decoded.Role, role)
 }
+
+func TestSimpleAuth_ValidateRole(t *testing.T) {
+	simpleAuth := utils.SimpleAuth{
+		UserID: uuid.New(),
+		Role:   enums.Debtor,
+	}
+
+	err := simpleAuth.ValidateRole(enums.Admin)
+	assert.Error(t, err)
+
+	err = simpleAuth.ValidateRole(enums.Debtor)
+	assert.NoError(t, err)
+}

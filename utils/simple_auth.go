@@ -4,13 +4,28 @@ import (
 	"credit/models/enums"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 
 	"github.com/google/uuid"
+)
+
+const (
+	errInvalidPermission = "user have no permission"
 )
 
 type SimpleAuth struct {
 	UserID uuid.UUID      `json:"id"`
 	Role   enums.UserRole `json:"role"`
+}
+
+func (s *SimpleAuth) ValidateRole(roles ...enums.UserRole) error {
+	for _, role := range roles {
+		if s.Role == role {
+			return nil
+		}
+	}
+
+	return errors.New(errInvalidPermission)
 }
 
 func GenerateToken(userID uuid.UUID, role enums.UserRole) (string, error) {

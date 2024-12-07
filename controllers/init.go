@@ -7,9 +7,11 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func InitController(service *services.Service, router *gin.Engine) {
+func InitController(service *services.Service, router *gin.RouterGroup) {
 	controllers := []interfaces.IController{
 		NewAuthController(service.AuthService),
+		NewDebtorController(service.DebtorService),
+		NewAdminController(service.AdminService),
 	}
 
 	for _, controller := range controllers {

@@ -5,103 +5,176 @@ import (
 	"credit/controllers"
 	"credit/dtos/request"
 	"credit/dtos/response"
+	custom_errors "credit/errors"
+	"credit/models/enums"
+	"credit/utils"
 	"encoding/json"
-	"errors"
 	"net/http"
-	"net/http/httptest"
 	"testing"
 
-	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
 
-type MockAuthService struct {
-	mock.Mock
+func TestAuthController_LoginSuccess(t *testing.T) {
+	userID := uuid.New()
+
+	mockService := new(MockAuthService)
+	mockService.On("Login", mock.Anything).Return(&response.LoginResponse{
+		Token: "mocked_token",
+		User: utils.SimpleAuth{
+			UserID: userID,
+			Role:   enums.Debtor,
+		},
+	}, http.StatusOK, nil)
+
+	authController := controllers.NewAuthController(mockService)
+
+	w, c := SetupRouter(authController)
+
+	payload := request.LoginPayload{
+		Email:    "user@user.com",
+		Password: "test_password",
+	}
+	jsonPayload, _ := json.Marshal(payload)
+	c.Request, _ = http.NewRequest("POST", "/auth/login", bytes.NewBuffer(jsonPayload))
+
+	authController.Login(c)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+
+	var loginResponse response.LoginResponse
+	ParseBodyAsStruct(t, w.Body, &loginResponse)
+
+	assert.Equal(t, "mocked_token", loginResponse.Token)
+	assert.Equal(t, userID, loginResponse.User.UserID)
+	assert.Equal(t, enums.Debtor, loginResponse.User.Role)
+
+	mockService.AssertExpectations(t)
 }
 
-func (m *MockAuthService) Login(email, password string) (*response.LoginResponse, error) {
-	args := m.Called(email, password)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).(*response.LoginResponse), args.Error(1)
+func TestAuthController_InvalidPayload(t *testing.T) {
+	mockService := new(MockAuthService)
+	authController := controllers.NewAuthController(mockService)
+
+	w, c := SetupRouter(authController)
+
+	c.Request, _ = http.NewRequest("POST", "/auth/login", bytes.NewBufferString("invalid_json"))
+
+	authController.Login(c)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
 }
 
-func TestAuthController_Login(t *testing.T) {
-	router := gin.Default()
+func TestAuthController_InvalidPassword(t *testing.T) {
+	field := "Password"
 
-	mockAuthService := new(MockAuthService)
-
-	authController := controllers.NewAuthController(mockAuthService)
-	authController.SetupGroup(router)
-
-	testCases := []struct {
-		name           string
-		payload        interface{}
-		expectedStatus int
-		expectedError  string
-		mockService    func(service *MockAuthService)
-	}{
-		{
-			name: "ValidLogin",
-			payload: request.LoginPayload{
-				Email:    "test@example.com",
-				Password: "password",
-			},
-			expectedStatus: http.StatusOK,
-			expectedError:  "",
-			mockService: func(service *MockAuthService) {
-				service.On("Login", "test@example.com", "password").Return(&response.LoginResponse{
-					Token: "test_token",
-				}, nil)
+	mockService := new(MockAuthService)
+	mockService.On("Login", mock.Anything).Return(nil, http.StatusUnauthorized,
+		&custom_errors.ErrorValidation{
+			Fields: []custom_errors.ErrorField{
+				{Field: &field, Value: "Invalid password"},
 			},
 		},
-		{
-			name: "InvalidLogin",
-			payload: request.LoginPayload{
-				Email:    "test@example.com",
-				Password: "wrong_password",
-			},
-			expectedStatus: http.StatusUnauthorized,
-			expectedError:  "invalid credentials",
-			mockService: func(service *MockAuthService) {
-				service.On("Login", "test@example.com", "wrong_password").Return(nil, errors.New("invalid credentials"))
-			},
-		},
-		{
-			name:           "InvalidPayload",
-			payload:        "invalid_payload",
-			expectedStatus: http.StatusBadRequest,
-			expectedError:  "json: cannot unmarshal string into Go value of type request.LoginPayload",
-			mockService:    func(service *MockAuthService) {},
-		},
+	)
+
+	authController := controllers.NewAuthController(mockService)
+
+	w, c := SetupRouter(authController)
+
+	payload := request.LoginPayload{
+		Email:    "user@user.com",
+		Password: "wrong_password",
+	}
+	jsonPayload, _ := json.Marshal(payload)
+	c.Request, _ = http.NewRequest("POST", "/auth/login", bytes.NewBuffer(jsonPayload))
+
+	authController.Login(c)
+
+	assert.Equal(t, http.StatusUnauthorized, w.Code)
+
+	mockService.AssertExpectations(t)
+}
+
+func TestAuthController_RegisterUserSuccess(t *testing.T) {
+	userID := uuid.New()
+
+	mockService := new(MockAuthService)
+	mockService.On("RegisterUser", mock.Anything).Return(&response.RegisterResponse{
+		UserID: userID,
+		Email:  "user@user.com",
+		Role:   enums.Debtor,
+	}, http.StatusCreated, nil)
+
+	authController := controllers.NewAuthController(mockService)
+
+	w, c := SetupRouter(authController)
+
+	payload := request.RegisterPayload{
+		Email:    "user@user.com",
+		Password: "test_password",
 	}
 
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			tc.mockService(mockAuthService)
+	jsonPayload, _ := json.Marshal(payload)
+	c.Request, _ = http.NewRequest("POST", "/auth/register", bytes.NewBuffer(jsonPayload))
 
-			payloadBytes, _ := json.Marshal(tc.payload)
-			req, _ := http.NewRequest("POST", "/auth/login", bytes.NewBuffer(payloadBytes))
-			req.Header.Set("Content-Type", "application/json")
+	authController.RegisterUser(c)
 
-			w := httptest.NewRecorder()
-			router.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusCreated, w.Code)
 
-			assert.Equal(t, tc.expectedStatus, w.Code)
+	var registerResponse response.RegisterResponse
+	ParseBodyAsStruct(t, w.Body, &registerResponse)
 
-			var respBody map[string]interface{}
-			err := json.Unmarshal(w.Body.Bytes(), &respBody)
-			assert.NoError(t, err)
+	assert.Equal(t, userID, registerResponse.UserID)
+	assert.Equal(t, "user@user.com", registerResponse.Email)
+	assert.Equal(t, enums.Debtor, registerResponse.Role)
 
-			if tc.expectedError != "" {
-				assert.Contains(t, respBody["error"], tc.expectedError)
-			} else {
-				assert.Equal(t, "test_token", respBody["data"].(map[string]interface{})["token"])
-			}
+	mockService.AssertExpectations(t)
+}
 
-			mockAuthService.AssertExpectations(t)
-		})
+func TestAuthController_RegisterUserInvalidPayload(t *testing.T) {
+	mockService := new(MockAuthService)
+	authController := controllers.NewAuthController(mockService)
+
+	w, c := SetupRouter(authController)
+
+	c.Request, _ = http.NewRequest("POST", "/auth/register", bytes.NewBufferString("invalid_json"))
+
+	authController.RegisterUser(c)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+
+	mockService.AssertExpectations(t)
+}
+
+func TestAuthController_RegisterUserValidationError(t *testing.T) {
+	field := "Email"
+
+	mockService := new(MockAuthService)
+	mockService.On("RegisterUser", mock.Anything).Return(nil, http.StatusBadRequest,
+		&custom_errors.ErrorValidation{
+			Fields: []custom_errors.ErrorField{
+				{Field: &field, Value: "Invalid email"},
+			},
+		},
+	)
+
+	authController := controllers.NewAuthController(mockService)
+
+	w, c := SetupRouter(authController)
+
+	payload := request.RegisterPayload{
+		Email:    "invalid_email",
+		Password: "test_password",
 	}
+
+	jsonPayload, _ := json.Marshal(payload)
+	c.Request, _ = http.NewRequest("POST", "/auth/register", bytes.NewBuffer(jsonPayload))
+
+	authController.RegisterUser(c)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+
+	mockService.AssertExpectations(t)
 }

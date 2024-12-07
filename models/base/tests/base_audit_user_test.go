@@ -2,7 +2,6 @@ package models_tests
 
 import (
 	"credit/models/base"
-	"credit/models/enums"
 	"testing"
 	"time"
 
@@ -12,28 +11,20 @@ import (
 
 func TestBaseAuditUser_SetCreated(t *testing.T) {
 	baseAudit := &base.BaseAuditUser{}
-	user := base.User{
-		ID:       uuid.New(),
-		Email:    "user@user.com",
-		Password: "user123",
-		Role:     enums.Debtor,
-	}
 
-	baseAudit.SetAuditCreated(time.Now(), user)
+	userID := uuid.New()
 
-	assert.Equal(t, baseAudit.CreatedByID, user.ID)
+	baseAudit.SetAuditCreated(time.Now(), userID)
+
+	assert.Equal(t, baseAudit.CreatedByID, userID)
 }
 
 func TestBaseAuditUser_SetUpdated(t *testing.T) {
 	baseAudit := &base.BaseAuditUser{}
-	user := base.User{
-		ID:       uuid.New(),
-		Email:    "user@user.com",
-		Password: "user123",
-		Role:     enums.Debtor,
-	}
 
-	baseAudit.SetAuditUpdated(time.Now(), user)
+	userID := uuid.New()
 
-	assert.Equal(t, baseAudit.UpdatedByID, user.ID)
+	baseAudit.SetAuditUpdated(time.Now(), userID)
+
+	assert.Equal(t, baseAudit.UpdatedByID, &userID)
 }
