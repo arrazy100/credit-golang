@@ -145,12 +145,18 @@ definitions:
         type: string
       selfie_picture_url:
         type: string
+      tenor_limits:
+        items:
+          $ref: '#/definitions/response.DebtorTenorLimitResponse'
+        type: array
       user_id:
         type: string
     type: object
   response.DebtorTenorLimitResponse:
     properties:
       current_limit:
+        type: string
+      id:
         type: string
       tenor_duration:
         type: integer

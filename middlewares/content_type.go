@@ -3,6 +3,7 @@ package middlewares
 import (
 	"credit/config"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -13,6 +14,11 @@ const (
 
 func ContentTypeMiddleware(config config.Server) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		if strings.HasPrefix(c.Request.URL.Path, "/swagger/") {
+			c.Next()
+			return
+		}
+
 		contentType := c.GetHeader("Content-Type")
 
 		allowed := false

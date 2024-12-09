@@ -567,6 +567,12 @@ const docTemplate = `{
                 "selfie_picture_url": {
                     "type": "string"
                 },
+                "tenor_limits": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/response.DebtorTenorLimitResponse"
+                    }
+                },
                 "user_id": {
                     "type": "string"
                 }
@@ -576,6 +582,9 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "current_limit": {
+                    "type": "string"
+                },
+                "id": {
                     "type": "string"
                 },
                 "tenor_duration": {
