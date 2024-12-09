@@ -23,8 +23,8 @@ func main() {
 		err = configs.DatabaseConnection.Transaction(func(tx *gorm.DB) error {
 			err := SeedInitial(configs)
 
-			seedVersion.Version++
-			if err := tx.Save(&seedVersion).Error; err != nil {
+			seedVersion.Version = 1
+			if err := tx.Create(&seedVersion).Error; err != nil {
 				return err
 			}
 
