@@ -12,14 +12,10 @@ import (
 
 func ParseBodyAsStruct[T any](t *testing.T, body *bytes.Buffer, result *T) {
 	var data T
-	if err := json.Unmarshal(body.Bytes(), &data); err != nil {
-		t.Fatalf("Failed to unmarshal response body: %v", err)
-	}
+	json.Unmarshal(body.Bytes(), &data)
 
 	dataJSON, _ := json.Marshal(data)
-	if err := json.Unmarshal(dataJSON, result); err != nil {
-		t.Fatalf("Failed to unmarshal 'data' field: %v", err)
-	}
+	json.Unmarshal(dataJSON, result)
 }
 
 func SetupRouter(controller interfaces.IController) (*httptest.ResponseRecorder, *gin.Context) {

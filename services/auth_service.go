@@ -3,11 +3,11 @@ package services
 import (
 	"credit/dtos/request"
 	"credit/dtos/response"
-	custom_errors "credit/errors"
 	"credit/models/base"
 	"credit/models/enums"
 	"credit/services/interfaces"
 	"credit/utils"
+	validations "credit/validations"
 	"errors"
 	"fmt"
 
@@ -30,8 +30,8 @@ func NewAuthService(db *gorm.DB) *AuthService {
 	return &AuthService{db: db}
 }
 
-func (s *AuthService) Login(payload request.LoginPayload) (*response.LoginResponse, int, *custom_errors.ErrorValidation) {
-	validationError := custom_errors.ValidateStruct(payload)
+func (s *AuthService) Login(payload request.LoginPayload) (*response.LoginResponse, int, *validations.ErrorValidation) {
+	validationError := validations.ValidateStruct(payload)
 	if validationError != nil {
 		return nil, statusBadRequest, validationError
 	}
@@ -40,46 +40,49 @@ func (s *AuthService) Login(payload request.LoginPayload) (*response.LoginRespon
 	result := s.db.Where("email = ?", payload.Email).First(&userData)
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-			return nil, statusBadRequest, custom_errors.Convert(fmt.Errorf(errAccountNotFound, payload.Email))
+			return nil, statusBadRequest, validations.Convert(fmt.Errorf(errAccountNotFound, payload.Email))
 		}
-		return nil, statusServerError, custom_errors.Convert(result.Error)
+		return nil, statusServerError, validations.Convert(result.Error)
 	}
 
 	if !utils.CheckPasswordHash(payload.Password, userData.Password) {
-		return nil, statusUnauthorized, custom_errors.Convert(errors.New(errInvalidPassword))
+		return nil, statusUnauthorized, validations.Convert(errors.New(errInvalidPassword))
 	}
 
 	token, err := utils.GenerateToken(userData.ID, userData.Role)
 	if err != nil {
-		return nil, statusServerError, custom_errors.Convert(err)
+		return nil, statusServerError, validations.Convert(err)
 	}
 
 	response := &response.LoginResponse{
 		Token: token,
-		User: utils.SimpleAuth{
+		User: response.UserResponse{
 			UserID: userData.ID,
-			Role:   userData.Role,
+			Role:   userData.Role.String(),
 		},
 	}
 
 	return response, statusSuccess, nil
 }
 
-func (s *AuthService) RegisterUser(payload request.RegisterPayload) (*response.RegisterResponse, int, *custom_errors.ErrorValidation) {
-	validationError := custom_errors.ValidateStruct(payload)
+func (s *AuthService) RegisterUser(payload request.RegisterPayload) (*response.RegisterResponse, int, *validations.ErrorValidation) {
+	validationError := validations.ValidateStruct(payload)
 	if validationError != nil {
 		return nil, statusBadRequest, validationError
 	}
 
 	var userData base.User
-	result := s.db.Where("email = ?", payload.Email).First(&userData)
-	if result.Error == nil {
-		return nil, statusBadRequest, custom_errors.Convert(fmt.Errorf("email %s already registered", payload.Email))
+	if err := s.db.Where("email = ?", payload.Email).First(&userData).Error; err != nil && err != gorm.ErrRecordNotFound {
+		return nil, statusServerError, validations.Convert(err)
+	}
+
+	if userData.ID != uuid.Nil {
+		return nil, statusBadRequest, validations.Convert(fmt.Errorf("email %s already registered", payload.Email))
 	}
 
 	hashedPassword, err := utils.HashPassword(payload.Password)
 	if err != nil {
-		return nil, statusServerError, custom_errors.Convert(err)
+		return nil, statusServerError, validations.Convert(err)
 	}
 
 	newUser := base.User{
@@ -89,15 +92,14 @@ func (s *AuthService) RegisterUser(payload request.RegisterPayload) (*response.R
 		Role:     enums.Debtor,
 	}
 
-	result = s.db.Create(&newUser)
-	if result.Error != nil {
-		return nil, statusServerError, custom_errors.Convert(result.Error)
+	if err := s.db.Create(&newUser).Error; err != nil {
+		return nil, statusServerError, validations.Convert(err)
 	}
 
 	response := &response.RegisterResponse{
 		UserID: newUser.ID,
 		Email:  newUser.Email,
-		Role:   newUser.Role,
+		Role:   newUser.Role.String(),
 	}
 
 	return response, statusCreated, nil

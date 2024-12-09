@@ -2,10 +2,10 @@ package controllers
 
 import (
 	"credit/controllers/interfaces"
-	custom_errors "credit/errors"
 	"credit/middlewares"
 	"credit/models/enums"
 	service_interface "credit/services/interfaces"
+	validations "credit/validations"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -37,17 +37,19 @@ func (c *AdminController) SetupGroup(router *gin.RouterGroup) {
 // @Accept       json
 // @Produce      json
 // @Success      200  {object}  response.ListDebtorResponse
-// @Failure      400  {object}  custom_errors.ErrorValidation
-// @Failure      500  {object}  custom_errors.ErrorValidation
+// @Failure      400  {object}  validations.ErrorValidation
+// @Failure      500  {object}  validations.ErrorValidation
 // @Router       /list/debtor [get]
 func (c *AdminController) ListDebtor(ctx *gin.Context) {
 	auth, err := middlewares.ParseToken(ctx, true)
 	if err != nil {
-		ctx.JSON(http.StatusUnauthorized, gin.H{"errors": custom_errors.Convert(err)})
+		ctx.JSON(http.StatusUnauthorized, gin.H{"errors": validations.Convert(err)})
+		return
 	}
 
 	if err := auth.ValidateRole(enums.Admin); err != nil {
-		ctx.JSON(http.StatusUnauthorized, gin.H{"errors": custom_errors.Convert(err)})
+		ctx.JSON(http.StatusUnauthorized, gin.H{"errors": validations.Convert(err)})
+		return
 	}
 
 	response, status, validationErrors := c.AdminService.ListDebtor()

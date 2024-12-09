@@ -1,8 +1,10 @@
 package main
 
 import (
+	"credit/backgrounds"
 	"credit/config"
 	"credit/controllers"
+	"credit/middlewares"
 	"credit/services"
 	"fmt"
 
@@ -40,12 +42,19 @@ func main() {
 	router := gin.New()
 	router.Use(gin.Logger())
 	router.Use(gin.Recovery())
+	router.Use(middlewares.ContentTypeMiddleware(configs.ServerConfig))
+	router.Use(middlewares.CorsMiddleware(configs.ServerConfig))
+	router.Use(middlewares.ContentSecurityPolicyMiddleware())
+
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	service := services.NewService(configs.DatabaseConnection)
 
 	apiV1 := router.Group("/api/v1")
 	controllers.InitController(service, apiV1)
+
+	// Background job
+	go backgrounds.StartBackground(service)
 
 	router.Run(fmt.Sprintf(":%s", configs.App.Port))
 }

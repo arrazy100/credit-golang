@@ -2,10 +2,10 @@ package services
 
 import (
 	"credit/dtos/response"
-	custom_errors "credit/errors"
 	"credit/models"
 	"credit/services/interfaces"
 	"credit/utils"
+	validations "credit/validations"
 
 	"gorm.io/gorm"
 )
@@ -22,10 +22,10 @@ func NewAdminService(db *gorm.DB) *AdminService {
 	return &AdminService{db: db}
 }
 
-func (s *AdminService) ListDebtor() (*response.ListDebtorResponse, int, *custom_errors.ErrorValidation) {
+func (s *AdminService) ListDebtor() (*response.ListDebtorResponse, int, *validations.ErrorValidation) {
 	var debtors []models.Debtor
 	if err := s.db.Find(&debtors).Error; err != nil {
-		return nil, statusServerError, custom_errors.Convert(err)
+		return nil, statusServerError, validations.Convert(err)
 	}
 
 	return mapDebtorsAsResponse(debtors), statusSuccess, nil

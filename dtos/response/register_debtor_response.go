@@ -1,9 +1,5 @@
 package response
 
-import (
-	"credit/models/enums"
-)
-
 type RegisterDebtorResponse struct {
 	NIK                string                     `json:"nik"`
 	FullName           string                     `json:"full_name"`
@@ -17,8 +13,9 @@ type RegisterDebtorResponse struct {
 }
 
 type DebtorTenorLimitResponse struct {
-	TenorLimitType enums.TenorLimitType `json:"tenor_limit_type"`
-	TenorDuration  int                  `json:"tenor_duration"`
-	TotalLimit     string               `json:"total_limit"`
-	CurrentLimit   string               `json:"current_limit"`
+	ID             string `json:"id"`
+	TenorLimitType string `json:"tenor_limit_type"`
+	TenorDuration  int    `json:"tenor_duration"`
+	TotalLimit     string `json:"total_limit"`
+	CurrentLimit   string `json:"current_limit"`
 }

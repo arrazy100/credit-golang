@@ -3,8 +3,8 @@ package controllers
 import (
 	"credit/controllers/interfaces"
 	"credit/dtos/request"
-	custom_errors "credit/errors"
 	service_interface "credit/services/interfaces"
+	validations "credit/validations"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -37,13 +37,13 @@ func (c *AuthController) SetupGroup(router *gin.RouterGroup) {
 // @Produce      json
 // @Param        request body request.LoginPayload true "Body"
 // @Success      200  {object}  response.LoginResponse
-// @Failure      400  {object}  custom_errors.ErrorValidation
-// @Failure      500  {object}  custom_errors.ErrorValidation
+// @Failure      400  {object}  validations.ErrorValidation
+// @Failure      500  {object}  validations.ErrorValidation
 // @Router       /auth/login [post]
 func (c *AuthController) Login(ctx *gin.Context) {
 	var payload request.LoginPayload
 	if err := ctx.ShouldBindBodyWithJSON(&payload); err != nil {
-		ctx.JSON(http.StatusBadRequest, custom_errors.Convert(err))
+		ctx.JSON(http.StatusBadRequest, validations.Convert(err))
 		return
 	}
 
@@ -64,13 +64,13 @@ func (c *AuthController) Login(ctx *gin.Context) {
 // @Produce      json
 // @Param        request body request.RegisterPayload true "Body"
 // @Success      200  {object}  response.RegisterResponse
-// @Failure      400  {object}  custom_errors.ErrorValidation
-// @Failure      500  {object}  custom_errors.ErrorValidation
+// @Failure      400  {object}  validations.ErrorValidation
+// @Failure      500  {object}  validations.ErrorValidation
 // @Router       /auth/register [post]
 func (c *AuthController) RegisterUser(ctx *gin.Context) {
 	var payload request.RegisterPayload
 	if err := ctx.ShouldBindBodyWithJSON(&payload); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"errors": custom_errors.Convert(err)})
+		ctx.JSON(http.StatusBadRequest, gin.H{"errors": validations.Convert(err)})
 		return
 	}
 

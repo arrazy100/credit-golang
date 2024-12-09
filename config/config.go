@@ -8,13 +8,15 @@ import (
 	"gopkg.in/yaml.v3"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
-type Cors struct {
-	AllowOrigins  []string `yaml:"allow_origin"`
-	AllowMethods  []string `yaml:"allow_methods"`
-	AllowHeaders  []string `yaml:"allow_headers"`
-	ExposeHeaders []string `yaml:"expose_headers"`
+type Server struct {
+	AllowOrigins     []string `yaml:"allow_origin"`
+	AllowMethods     []string `yaml:"allow_methods"`
+	AllowHeaders     []string `yaml:"allow_headers"`
+	ExposeHeaders    []string `yaml:"expose_headers"`
+	AllowContentType []string `yaml:"allow_content_type"`
 }
 
 type Db struct {
@@ -31,13 +33,13 @@ type App struct {
 }
 
 type YamlConfig struct {
-	Cors     Cors `yaml:"cors"`
-	Database Db   `yaml:"db"`
-	App      App  `yaml:"app"`
+	Server   Server `yaml:"server"`
+	Database Db     `yaml:"db"`
+	App      App    `yaml:"app"`
 }
 
 type Config struct {
-	CorsConfig         Cors
+	ServerConfig       Server
 	DatabaseConnection *gorm.DB
 	App                App
 }
@@ -54,7 +56,7 @@ func Load(filename string) (*Config, error) {
 		return nil, err
 	}
 
-	CorsConfig(&yamlConfig.Cors)
+	ServerConfig(&yamlConfig.Server)
 
 	db_conn, err := DatabaseConfig(yamlConfig.Database)
 	if err != nil {
@@ -64,19 +66,19 @@ func Load(filename string) (*Config, error) {
 	AppConfig(&yamlConfig.App)
 
 	return &Config{
-		CorsConfig:         yamlConfig.Cors,
+		ServerConfig:       yamlConfig.Server,
 		DatabaseConnection: db_conn,
 		App:                yamlConfig.App,
 	}, nil
 }
 
-func CorsConfig(cors *Cors) {
-	if len(cors.AllowOrigins) == 0 {
-		cors.AllowOrigins = []string{"*"}
+func ServerConfig(server *Server) {
+	if len(server.AllowOrigins) == 0 {
+		server.AllowOrigins = []string{"*"}
 	}
 
-	if len(cors.AllowMethods) == 0 {
-		cors.AllowMethods = []string{}
+	if len(server.AllowMethods) == 0 {
+		server.AllowMethods = []string{}
 	}
 }
 
@@ -89,7 +91,7 @@ func DatabaseConfig(database Db) (*gorm.DB, error) {
 		"host=%s user=%s password=%s dbname=%s port=%d sslmode=disable",
 		database.Host, database.User, database.Password, database.DbName, database.Port,
 	)
-	db_conn, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	db_conn, err := gorm.Open(postgres.Open(dsn), &gorm.Config{Logger: logger.Default.LogMode(logger.Info)})
 	if err != nil {
 		return nil, err
 	}

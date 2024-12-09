@@ -14,7 +14,7 @@ func TestBaseAudit_SetCreated(t *testing.T) {
 
 	baseAudit.SetAuditCreated(currentTime)
 
-	assert.Equal(t, baseAudit.CreatedAt, currentTime)
+	assert.Equal(t, baseAudit.CreatedAt, currentTime.UTC())
 }
 
 func TestBaseAudit_SetUpdated(t *testing.T) {
@@ -23,5 +23,5 @@ func TestBaseAudit_SetUpdated(t *testing.T) {
 
 	baseAudit.SetAuditUpdated(currentTime)
 
-	assert.Equal(t, baseAudit.UpdatedAt, currentTime)
+	assert.Equal(t, baseAudit.UpdatedAt, currentTime.UTC())
 }

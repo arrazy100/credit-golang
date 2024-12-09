@@ -14,10 +14,12 @@ func main() {
 	models := []interface{}{
 		&base.User{},
 		&models.SeedVersion{},
+		&models.Sequence{},
 		&models.Debtor{},
 		&models.DebtorTenorLimit{},
 		&models.DebtorTransaction{},
 		&models.DebtorInstallment{},
+		&models.DebtorInstallmentLine{},
 	}
 
 	stmts, err := gormschema.New("postgres").Load(models...)

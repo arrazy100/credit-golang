@@ -51,13 +51,13 @@
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/custom_errors.ErrorValidation"
+                            "$ref": "#/definitions/validations.ErrorValidation"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/custom_errors.ErrorValidation"
+                            "$ref": "#/definitions/validations.ErrorValidation"
                         }
                     }
                 }
@@ -97,13 +97,13 @@
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/custom_errors.ErrorValidation"
+                            "$ref": "#/definitions/validations.ErrorValidation"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/custom_errors.ErrorValidation"
+                            "$ref": "#/definitions/validations.ErrorValidation"
                         }
                     }
                 }
@@ -132,13 +132,94 @@
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/custom_errors.ErrorValidation"
+                            "$ref": "#/definitions/validations.ErrorValidation"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/custom_errors.ErrorValidation"
+                            "$ref": "#/definitions/validations.ErrorValidation"
+                        }
+                    }
+                }
+            }
+        },
+        "/debtor/installment/list": {
+            "get": {
+                "description": "List Debtor Installment of logged in User",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "debtor"
+                ],
+                "summary": "List Debtor Installment",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.ListDebtorInstallmentResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/validations.ErrorValidation"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/validations.ErrorValidation"
+                        }
+                    }
+                }
+            }
+        },
+        "/debtor/installment/pay": {
+            "post": {
+                "description": "Pay Debtor Installment Line of logged in User",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "debtor"
+                ],
+                "summary": "Pay Debtor Installment Line",
+                "parameters": [
+                    {
+                        "description": "Body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.DebtorPayInstallmentLinePayload"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.DebtorInstallmentLineResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/validations.ErrorValidation"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/validations.ErrorValidation"
                         }
                     }
                 }
@@ -178,13 +259,59 @@
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/custom_errors.ErrorValidation"
+                            "$ref": "#/definitions/validations.ErrorValidation"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/custom_errors.ErrorValidation"
+                            "$ref": "#/definitions/validations.ErrorValidation"
+                        }
+                    }
+                }
+            }
+        },
+        "/debtor/transaction": {
+            "post": {
+                "description": "Create a new Debtor Transaction",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "debtor"
+                ],
+                "summary": "Create Debtor Transaction",
+                "parameters": [
+                    {
+                        "description": "Body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.DebtorTransactionPayload"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.DebtorTransactionResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/validations.ErrorValidation"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/validations.ErrorValidation"
                         }
                     }
                 }
@@ -213,13 +340,13 @@
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/custom_errors.ErrorValidation"
+                            "$ref": "#/definitions/validations.ErrorValidation"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/custom_errors.ErrorValidation"
+                            "$ref": "#/definitions/validations.ErrorValidation"
                         }
                     }
                 }
@@ -227,55 +354,37 @@
         }
     },
     "definitions": {
-        "custom_errors.ErrorField": {
+        "request.DebtorPayInstallmentLinePayload": {
             "type": "object",
+            "required": [
+                "installment_line_id"
+            ],
             "properties": {
-                "field": {
-                    "type": "string"
-                },
-                "tag": {
-                    "type": "string"
-                },
-                "value": {
+                "installment_line_id": {
                     "type": "string"
                 }
             }
         },
-        "custom_errors.ErrorValidation": {
+        "request.DebtorTransactionPayload": {
             "type": "object",
+            "required": [
+                "asset_name",
+                "otr",
+                "tenor_limit_id"
+            ],
             "properties": {
-                "fields": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/custom_errors.ErrorField"
-                    }
+                "asset_name": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "minLength": 1
                 },
-                "message": {
+                "otr": {
+                    "type": "string"
+                },
+                "tenor_limit_id": {
                     "type": "string"
                 }
             }
-        },
-        "enums.TenorLimitType": {
-            "type": "integer",
-            "enum": [
-                1,
-                2
-            ],
-            "x-enum-varnames": [
-                "Monthly",
-                "Yearly"
-            ]
-        },
-        "enums.UserRole": {
-            "type": "integer",
-            "enum": [
-                1,
-                2
-            ],
-            "x-enum-varnames": [
-                "Admin",
-                "Debtor"
-            ]
         },
         "request.LoginPayload": {
             "type": "object",
@@ -363,6 +472,64 @@
                 }
             }
         },
+        "response.DebtorInstallmentLineResponse": {
+            "type": "object",
+            "properties": {
+                "due_date": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "installment_amount": {
+                    "type": "string"
+                },
+                "installment_number": {
+                    "type": "integer"
+                },
+                "payment_date": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "response.DebtorInstallmentResponse": {
+            "type": "object",
+            "properties": {
+                "debtor_transaction": {
+                    "$ref": "#/definitions/response.DebtorTransactionResponse"
+                },
+                "end_date_period": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "lines": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/response.DebtorInstallmentLineResponse"
+                    }
+                },
+                "monthly_installment": {
+                    "type": "string"
+                },
+                "paid_installment_count": {
+                    "type": "integer"
+                },
+                "start_date_period": {
+                    "type": "string"
+                },
+                "tenor_duration": {
+                    "type": "integer"
+                },
+                "total_installment_count": {
+                    "type": "integer"
+                }
+            }
+        },
         "response.DebtorResponse": {
             "type": "object",
             "properties": {
@@ -401,14 +568,60 @@
         "response.DebtorTenorLimitResponse": {
             "type": "object",
             "properties": {
-                "limit_amount": {
+                "current_limit": {
                     "type": "string"
                 },
                 "tenor_duration": {
                     "type": "integer"
                 },
                 "tenor_limit_type": {
-                    "$ref": "#/definitions/enums.TenorLimitType"
+                    "type": "string"
+                },
+                "total_limit": {
+                    "type": "string"
+                }
+            }
+        },
+        "response.DebtorTransactionResponse": {
+            "type": "object",
+            "properties": {
+                "admin_fee": {
+                    "type": "string"
+                },
+                "asset_name": {
+                    "type": "string"
+                },
+                "contract_number": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "otr": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "total_interest": {
+                    "type": "string"
+                },
+                "total_loan": {
+                    "type": "string"
+                }
+            }
+        },
+        "response.ListDebtorInstallmentResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/response.DebtorInstallmentResponse"
+                    }
+                },
+                "total": {
+                    "type": "integer"
                 }
             }
         },
@@ -433,7 +646,7 @@
                     "type": "string"
                 },
                 "user": {
-                    "$ref": "#/definitions/utils.SimpleAuth"
+                    "$ref": "#/definitions/response.UserResponse"
                 }
             }
         },
@@ -479,21 +692,49 @@
                     "type": "string"
                 },
                 "role": {
-                    "$ref": "#/definitions/enums.UserRole"
+                    "type": "string"
                 },
                 "user_id": {
                     "type": "string"
                 }
             }
         },
-        "utils.SimpleAuth": {
+        "response.UserResponse": {
             "type": "object",
             "properties": {
-                "id": {
+                "role": {
                     "type": "string"
                 },
-                "role": {
-                    "$ref": "#/definitions/enums.UserRole"
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "validations.ErrorField": {
+            "type": "object",
+            "properties": {
+                "field": {
+                    "type": "string"
+                },
+                "tag": {
+                    "type": "string"
+                },
+                "value": {
+                    "type": "string"
+                }
+            }
+        },
+        "validations.ErrorValidation": {
+            "type": "object",
+            "properties": {
+                "fields": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/validations.ErrorField"
+                    }
+                },
+                "message": {
+                    "type": "string"
                 }
             }
         }

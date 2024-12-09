@@ -1,39 +1,27 @@
 basePath: /api/v1
 definitions:
-  custom_errors.ErrorField:
+  request.DebtorPayInstallmentLinePayload:
     properties:
-      field:
+      installment_line_id:
         type: string
-      tag:
-        type: string
-      value:
-        type: string
+    required:
+    - installment_line_id
     type: object
-  custom_errors.ErrorValidation:
+  request.DebtorTransactionPayload:
     properties:
-      fields:
-        items:
-          $ref: '#/definitions/custom_errors.ErrorField'
-        type: array
-      message:
+      asset_name:
+        maxLength: 255
+        minLength: 1
         type: string
+      otr:
+        type: string
+      tenor_limit_id:
+        type: string
+    required:
+    - asset_name
+    - otr
+    - tenor_limit_id
     type: object
-  enums.TenorLimitType:
-    enum:
-    - 1
-    - 2
-    type: integer
-    x-enum-varnames:
-    - Monthly
-    - Yearly
-  enums.UserRole:
-    enum:
-    - 1
-    - 2
-    type: integer
-    x-enum-varnames:
-    - Admin
-    - Debtor
   request.LoginPayload:
     properties:
       email:
@@ -99,6 +87,44 @@ definitions:
     - email
     - password
     type: object
+  response.DebtorInstallmentLineResponse:
+    properties:
+      due_date:
+        type: string
+      id:
+        type: string
+      installment_amount:
+        type: string
+      installment_number:
+        type: integer
+      payment_date:
+        type: string
+      status:
+        type: string
+    type: object
+  response.DebtorInstallmentResponse:
+    properties:
+      debtor_transaction:
+        $ref: '#/definitions/response.DebtorTransactionResponse'
+      end_date_period:
+        type: string
+      id:
+        type: string
+      lines:
+        items:
+          $ref: '#/definitions/response.DebtorInstallmentLineResponse'
+        type: array
+      monthly_installment:
+        type: string
+      paid_installment_count:
+        type: integer
+      start_date_period:
+        type: string
+      tenor_duration:
+        type: integer
+      total_installment_count:
+        type: integer
+    type: object
   response.DebtorResponse:
     properties:
       date_of_birth:
@@ -124,12 +150,42 @@ definitions:
     type: object
   response.DebtorTenorLimitResponse:
     properties:
-      limit_amount:
+      current_limit:
         type: string
       tenor_duration:
         type: integer
       tenor_limit_type:
-        $ref: '#/definitions/enums.TenorLimitType'
+        type: string
+      total_limit:
+        type: string
+    type: object
+  response.DebtorTransactionResponse:
+    properties:
+      admin_fee:
+        type: string
+      asset_name:
+        type: string
+      contract_number:
+        type: string
+      id:
+        type: string
+      otr:
+        type: string
+      status:
+        type: string
+      total_interest:
+        type: string
+      total_loan:
+        type: string
+    type: object
+  response.ListDebtorInstallmentResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/response.DebtorInstallmentResponse'
+        type: array
+      total:
+        type: integer
     type: object
   response.ListDebtorResponse:
     properties:
@@ -145,7 +201,7 @@ definitions:
       token:
         type: string
       user:
-        $ref: '#/definitions/utils.SimpleAuth'
+        $ref: '#/definitions/response.UserResponse'
     type: object
   response.RegisterDebtorResponse:
     properties:
@@ -175,16 +231,34 @@ definitions:
       email:
         type: string
       role:
-        $ref: '#/definitions/enums.UserRole'
+        type: string
       user_id:
         type: string
     type: object
-  utils.SimpleAuth:
+  response.UserResponse:
     properties:
-      id:
-        type: string
       role:
-        $ref: '#/definitions/enums.UserRole'
+        type: string
+      user_id:
+        type: string
+    type: object
+  validations.ErrorField:
+    properties:
+      field:
+        type: string
+      tag:
+        type: string
+      value:
+        type: string
+    type: object
+  validations.ErrorValidation:
+    properties:
+      fields:
+        items:
+          $ref: '#/definitions/validations.ErrorField'
+        type: array
+      message:
+        type: string
     type: object
 externalDocs:
   description: OpenAPI
@@ -224,11 +298,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/custom_errors.ErrorValidation'
+            $ref: '#/definitions/validations.ErrorValidation'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/custom_errors.ErrorValidation'
+            $ref: '#/definitions/validations.ErrorValidation'
       summary: Login
       tags:
       - auth
@@ -254,11 +328,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/custom_errors.ErrorValidation'
+            $ref: '#/definitions/validations.ErrorValidation'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/custom_errors.ErrorValidation'
+            $ref: '#/definitions/validations.ErrorValidation'
       summary: Register
       tags:
       - auth
@@ -277,12 +351,65 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/custom_errors.ErrorValidation'
+            $ref: '#/definitions/validations.ErrorValidation'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/custom_errors.ErrorValidation'
+            $ref: '#/definitions/validations.ErrorValidation'
       summary: Detail Debtor
+      tags:
+      - debtor
+  /debtor/installment/list:
+    get:
+      consumes:
+      - application/json
+      description: List Debtor Installment of logged in User
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.ListDebtorInstallmentResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/validations.ErrorValidation'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/validations.ErrorValidation'
+      summary: List Debtor Installment
+      tags:
+      - debtor
+  /debtor/installment/pay:
+    post:
+      consumes:
+      - application/json
+      description: Pay Debtor Installment Line of logged in User
+      parameters:
+      - description: Body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.DebtorPayInstallmentLinePayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.DebtorInstallmentLineResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/validations.ErrorValidation'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/validations.ErrorValidation'
+      summary: Pay Debtor Installment Line
       tags:
       - debtor
   /debtor/register:
@@ -307,12 +434,42 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/custom_errors.ErrorValidation'
+            $ref: '#/definitions/validations.ErrorValidation'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/custom_errors.ErrorValidation'
+            $ref: '#/definitions/validations.ErrorValidation'
       summary: Register Debtor
+      tags:
+      - debtor
+  /debtor/transaction:
+    post:
+      consumes:
+      - application/json
+      description: Create a new Debtor Transaction
+      parameters:
+      - description: Body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.DebtorTransactionPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.DebtorTransactionResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/validations.ErrorValidation'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/validations.ErrorValidation'
+      summary: Create Debtor Transaction
       tags:
       - debtor
   /list/debtor:
@@ -330,11 +487,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/custom_errors.ErrorValidation'
+            $ref: '#/definitions/validations.ErrorValidation'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/custom_errors.ErrorValidation'
+            $ref: '#/definitions/validations.ErrorValidation'
       summary: List Debtor
       tags:
       - admin

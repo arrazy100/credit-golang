@@ -1,8 +1,8 @@
 package middlewares
 
 import (
-	custom_errors "credit/errors"
 	"credit/utils"
+	validations "credit/validations"
 	"errors"
 	"strings"
 
@@ -20,7 +20,7 @@ func SimpleAuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		_, err := ParseToken(c, false)
 		if err != nil {
-			c.JSON(401, gin.H{"errors": custom_errors.Convert(err)})
+			c.JSON(401, gin.H{"errors": validations.Convert(err)})
 			c.Abort()
 			return
 		}

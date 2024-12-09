@@ -3,12 +3,17 @@ package interfaces
 import (
 	"credit/dtos/request"
 	"credit/dtos/response"
-	custom_errors "credit/errors"
+	validations "credit/validations"
+	"sync"
 
 	"github.com/google/uuid"
 )
 
 type DebtorInterface interface {
-	RegisterDebtor(userID uuid.UUID, payload request.RegisterDebtorPayload) (*response.RegisterDebtorResponse, int, *custom_errors.ErrorValidation)
-	DetailDebtor(userID uuid.UUID) (*response.DebtorResponse, int, *custom_errors.ErrorValidation)
+	Register(userID uuid.UUID, payload request.RegisterDebtorPayload) (*response.RegisterDebtorResponse, int, *validations.ErrorValidation)
+	Detail(userID uuid.UUID) (*response.DebtorResponse, int, *validations.ErrorValidation)
+	CreateTransaction(userID uuid.UUID, payload request.DebtorTransactionPayload) (*response.DebtorTransactionResponse, int, *validations.ErrorValidation)
+	ListInstallment(userID uuid.UUID) (*response.ListDebtorInstallmentResponse, int, *validations.ErrorValidation)
+	PayInstallmentLine(userID uuid.UUID, payload request.DebtorPayInstallmentLinePayload) (*response.DebtorInstallmentLineResponse, int, *validations.ErrorValidation)
+	BatchUpdateOverdueInstallmentLine(wg *sync.WaitGroup, errCh chan<- error)
 }

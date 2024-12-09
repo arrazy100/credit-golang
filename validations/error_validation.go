@@ -1,9 +1,11 @@
-package custom_errors
+package validations
 
 import (
 	"credit/utils"
+	"reflect"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/microcosm-cc/bluemonday"
 )
 
 type ErrorValidation struct {
@@ -22,6 +24,8 @@ func toPointer(s string) *string {
 }
 
 func ValidateStruct[T any](payload T) *ErrorValidation {
+	SanitizeStruct(&payload)
+
 	var errorFields []ErrorField
 
 	validate := utils.GetDefaultValidator()
@@ -42,6 +46,26 @@ func ValidateStruct[T any](payload T) *ErrorValidation {
 	}
 
 	return nil
+}
+
+func SanitizeStruct[T any](payload *T) {
+	p := bluemonday.UGCPolicy()
+
+	val := reflect.ValueOf(payload).Elem()
+	for i := 0; i < val.NumField(); i++ {
+		field := val.Field(i)
+
+		if field.Kind() == reflect.String && field.CanSet() {
+			originalValue := field.String()
+			sanitizedValue := p.Sanitize(originalValue)
+			field.SetString(sanitizedValue)
+		}
+
+		if field.Kind() == reflect.Struct {
+			nestedStruct := field.Addr().Interface()
+			SanitizeStruct(&nestedStruct)
+		}
+	}
 }
 
 func Convert(err error) *ErrorValidation {

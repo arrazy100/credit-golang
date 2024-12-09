@@ -2,7 +2,6 @@ package main
 
 import (
 	"credit/config"
-	"credit/models"
 	"credit/models/base"
 	"credit/models/enums"
 	"credit/utils"
@@ -25,19 +24,8 @@ func SeedInitial(config *config.Config) error {
 	}
 
 	err = config.DatabaseConnection.Transaction(func(tx *gorm.DB) error {
-		var seedVersion models.SeedVersion
-		if err := tx.First(&seedVersion).Error; err != nil && err != gorm.ErrRecordNotFound {
+		if err := tx.Create(&admin).Error; err != nil {
 			return err
-		}
-
-		if seedVersion.Version == 0 {
-			if err := tx.Create(&admin).Error; err != nil {
-				return err
-			}
-
-			if err := tx.Create(&models.SeedVersion{Version: 1}).Error; err != nil {
-				return err
-			}
 		}
 
 		return nil

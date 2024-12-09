@@ -1,7 +1,7 @@
-package custom_errors_test
+package validations_test
 
 import (
-	custom_errors "credit/errors"
+	validations "credit/validations"
 	"errors"
 	"testing"
 
@@ -21,7 +21,7 @@ func TestValidateStruct(t *testing.T) {
 		Age:   25,
 	}
 
-	validErrors := custom_errors.ValidateStruct(validPayload)
+	validErrors := validations.ValidateStruct(validPayload)
 	assert.Empty(t, validErrors, "Expected no validation errors for valid payload")
 
 	invalidPayload := TestPayload{
@@ -30,7 +30,7 @@ func TestValidateStruct(t *testing.T) {
 		Age:   15,
 	}
 
-	invalidErrors := custom_errors.ValidateStruct(invalidPayload)
+	invalidErrors := validations.ValidateStruct(invalidPayload)
 	invalidFields := invalidErrors.Fields
 	assert.Len(t, invalidFields, 3, "Expected 3 validation errors for invalid payload")
 
@@ -49,10 +49,10 @@ func TestValidateStruct(t *testing.T) {
 
 func TestConvert(t *testing.T) {
 	testError := errors.New("an unexpected error occurred")
-	convertedErrors := custom_errors.Convert(testError)
+	convertedErrors := validations.Convert(testError)
 
 	assert.Equal(t, "an unexpected error occurred", convertedErrors.Message)
 
-	nilErrors := custom_errors.Convert(nil)
+	nilErrors := validations.Convert(nil)
 	assert.Empty(t, nilErrors, "Expected no errors for nil input")
 }

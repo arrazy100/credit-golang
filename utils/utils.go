@@ -27,7 +27,7 @@ func FormatMoney(amount *big.Float) string {
 func ParseMoney(amount string) (*big.Float, error) {
 	f, ok := new(big.Float).SetString(amount)
 	if !ok {
-		return nil, fmt.Errorf("invalid amount")
+		return nil, fmt.Errorf("invalid amount %s", amount)
 	}
 	return f, nil
 }

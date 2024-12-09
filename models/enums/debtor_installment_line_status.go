@@ -7,3 +7,16 @@ const (
 	Paid
 	Overdue
 )
+
+func (e DebtorInstallmentLineStatus) String() string {
+	switch e {
+	case Upcoming:
+		return "Upcoming"
+	case Paid:
+		return "Paid"
+	case Overdue:
+		return "Overdue"
+	default:
+		return "Unknown"
+	}
+}

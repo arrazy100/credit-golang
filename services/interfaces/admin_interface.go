@@ -2,9 +2,9 @@ package interfaces
 
 import (
 	"credit/dtos/response"
-	custom_errors "credit/errors"
+	validations "credit/validations"
 )
 
 type AdminInterface interface {
-	ListDebtor() (*response.ListDebtorResponse, int, *custom_errors.ErrorValidation)
+	ListDebtor() (*response.ListDebtorResponse, int, *validations.ErrorValidation)
 }

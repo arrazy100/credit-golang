@@ -13,10 +13,10 @@ type BaseAudit struct {
 }
 
 func (b *BaseAudit) SetAuditCreated(timeStamp time.Time) {
-	b.CreatedAt = timeStamp
+	b.CreatedAt = timeStamp.UTC()
 	b.ID = uuid.New()
 }
 
 func (b *BaseAudit) SetAuditUpdated(timeStamp time.Time) {
-	b.UpdatedAt = timeStamp
+	b.UpdatedAt = timeStamp.UTC()
 }
