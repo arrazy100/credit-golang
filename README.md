@@ -8,6 +8,15 @@ Above command will run these:
 - Apply Migrations
 - Run Seeds
 
+<br/>
+
+Users:
+- admin@admin.com / admin123
+- budi@user.com / budi123
+- annisa@user.com / annisa123
+
+<br/>
+
 Swagger http://localhost:8080/swagger/index.html
 
 ## Implemented OWASP
